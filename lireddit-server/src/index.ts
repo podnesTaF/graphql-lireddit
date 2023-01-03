@@ -15,17 +15,22 @@ import cors from 'cors';
 import { createConnection } from 'typeorm';
 import { User } from './entities/User';
 import { Post } from './entities/Post';
+import path from 'path';
+import {Updoot} from "./entities/Updoot";
 
 const main = async () => {
-  await createConnection({
+   await createConnection({
     type: 'postgres',
     database: 'liredditorm',
     username: 'postgres',
     password: 'podnes1972',
     logging: true,
     synchronize: true,
-    entities: [Post, User],
+    migrations: [path.join(__dirname, './migrations/*')],
+    entities: [Post, User, Updoot],
   });
+
+  // await conn.runMigrations();
 
   const app = express();
 
@@ -41,7 +46,7 @@ const main = async () => {
 
   app.use(
     session({
-      store: new RedisStore({ client: redis as any }),
+      store: new RedisStore({ client: redis as any}),
       name: 'qid',
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10,

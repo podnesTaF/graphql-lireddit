@@ -3,11 +3,11 @@
 import {
     Arg,
     Ctx,
-    Field,
+    Field, FieldResolver,
     Mutation,
     ObjectType,
     Query,
-    Resolver,
+    Resolver, Root,
 } from 'type-graphql';
 import {MyContext} from '../types';
 import {User} from '../entities/User';
@@ -37,8 +37,16 @@ class UserResponse {
     errors?: FieldError[];
 }
 
-@Resolver()
+@Resolver(User)
 export class UserResolver {
+    @FieldResolver(() => String)
+    email(@Root() user: User, @Ctx() {req}: MyContext) {
+    if(req.session.id ) {
+        return user.email;
+    }
+    return '';
+    }
+
     @Mutation(() => UserResponse)
     async changePassword(
         @Arg('token') token: string,
@@ -55,6 +63,7 @@ export class UserResolver {
                 ],
             };
         }
+
 
         const key = FORGET_PASSWORD_PREFIX + token;
         const userId = await redis.get(key);
@@ -129,7 +138,6 @@ export class UserResolver {
 
     @Query(() => User, {nullable: true})
     me(@Ctx() {req}: MyContext) {
-        return
         if (!req.session.userId) {
             return null;
         }
