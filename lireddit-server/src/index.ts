@@ -16,10 +16,14 @@ import { createConnection } from 'typeorm';
 import { User } from './entities/User';
 import { Post } from './entities/Post';
 import path from 'path';
-import {Updoot} from "./entities/Updoot";
+import { Updoot } from './entities/Updoot';
+import { createUserLoader } from './utils/createUserLoader';
+import { createUpdootLoader } from './utils/createUpdootLoader';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const main = async () => {
-   await createConnection({
+  await createConnection({
     type: 'postgres',
     database: 'liredditorm',
     username: 'postgres',
@@ -39,14 +43,14 @@ const main = async () => {
 
   app.use(
     cors({
-      origin: 'http://localhost:3000',
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     })
   );
 
   app.use(
     session({
-      store: new RedisStore({ client: redis as any}),
+      store: new RedisStore({ client: redis as any }),
       name: 'qid',
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
@@ -65,7 +69,13 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({ req, res, redis }),
+    context: ({ req, res }) => ({
+      req,
+      res,
+      redis,
+      userLoader: createUserLoader(),
+      updootLoader: createUpdootLoader(),
+    }),
   });
 
   await apolloServer.start();
