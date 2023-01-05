@@ -1,14 +1,20 @@
-import React from 'react';
-import {Box, Button, Flex, Link as A} from "@chakra-ui/react";
+import React, {useEffect, useState} from 'react';
+import {Box, Button, Flex, Heading, Link as A, Text} from "@chakra-ui/react";
 import Link from 'next/link'
 import {useLogoutMutation, useMeQuery} from "../generated/graphql";
 import {isServer} from "../utils/isServer";
+import {useRouter} from "next/router";
 const NavBar = () => {
+    const router = useRouter()
+    const [isServer, setIsServer] = useState(true)
     const [{fetching: logoutFetching}, logout] = useLogoutMutation()
     const [{data, fetching}] = useMeQuery({
-        pause: isServer()
+        pause: isServer
     })
 
+    useEffect(() => {
+        setIsServer(false)
+    }, [])
 
     let body = null
 
@@ -27,19 +33,33 @@ const NavBar = () => {
         )
     } else {
         body = (
-            <Flex>
-                <Box mr={2}>{data.me.username}</Box>
-                <Button isLoading={logoutFetching} onClick={() => {
-                    logout()
+            <Flex align={'center'}>
+                <Link href={'/create-post'}>
+                    <Button colorScheme={'teal'} mr={5}>Create post</Button>
+                </Link>
+                <Box mx={4}>
+                    <Text fontSize='xl'>{data.me.username}</Text>
+                </Box>
+                <Button colorScheme={'teal'} isLoading={logoutFetching} onClick={async () => {
+                    // @ts-ignore
+                    await logout()
+                    router.reload()
                 }} variant='link'>logout</Button>
             </Flex>
         )
     }
     return (
-        <Flex zIndex={2} position='sticky' top={0} bg='tomato' p={4}>
-            <Box ml={'auto'}>
-                {body}
-            </Box>
+        <Flex zIndex={2} position='sticky' top={0} bg='tomato' p={4} >
+            <Flex mx={"auto"} flex={1} align={'center'} maxW={800}>
+                <Link href={'/'}>
+                    <A>
+                        <Heading>LiReddit</Heading>
+                    </A>
+                </Link>
+                <Box ml={'auto'}>
+                    {body}
+                </Box>
+            </Flex>
         </Flex>
     );
 };

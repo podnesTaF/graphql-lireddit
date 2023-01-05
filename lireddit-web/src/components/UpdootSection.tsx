@@ -16,10 +16,14 @@ const UpdootSection: React.FC<UpdootSectionProps> = ({post}) => {
             <Box>
                 <IconButton
                     onClick={async () => {
-                    setLoadingState('updoot-loading')
-                    await vote({value: 1, postId: post.id})
-                    setLoadingState('not-loading')
-                }}
+                        if(post.voteStatus === 1) {
+                            return
+                        }
+                        setLoadingState('updoot-loading')
+                        await vote({value: 1, postId: post.id})
+                        setLoadingState('not-loading')
+                    }}
+                    colorScheme={post.voteStatus === 1 ? "green" : undefined}
                     isLoading={loadingState === 'updoot-loading'}
                     aria-label='Search database'
                     icon={<ChevronUpIcon boxSize='2em' />} />
@@ -29,10 +33,14 @@ const UpdootSection: React.FC<UpdootSectionProps> = ({post}) => {
             </Box>
             <Box>
                 <IconButton
+                    colorScheme={post.voteStatus === -1 ? "red" : undefined}
                     onClick={async () => {
-                    setLoadingState('downdoot-loading')
-                    await vote({value: -1, postId: post.id})
-                    setLoadingState('not-loading')
+                        if(post.voteStatus === -1) {
+                            return
+                        }
+                        setLoadingState('downdoot-loading')
+                        await vote({value: -1, postId: post.id})
+                        setLoadingState('not-loading')
                     }}
                     isLoading={loadingState === 'downdoot-loading'}
                     aria-label='Search database'
